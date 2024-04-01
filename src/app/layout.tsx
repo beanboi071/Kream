@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+import AppProp from "./components/AppContext";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import setupLocatorUI from "@locator/runtime";
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 
-const roboto = Roboto({ subsets: ["latin"],weight:['400','500','700'] });
+const roboto = Roboto({ subsets: ["latin"], weight: ['400', '500', '700'] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -19,17 +21,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
+
   return (
     <html lang="en">
       <body className={roboto.className}>
         <main className="max-w-4xl  mx-auto p-4">
-    <Header/>
+          <AppProp>
+            <Header />
 
-        {children}
-        <Footer/>
+            {children}
+            <Footer />
+          </AppProp>
         </main>
-        </body>
+      </body>
     </html>
   );
 }

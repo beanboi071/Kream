@@ -1,4 +1,5 @@
 "use client";
+import { signIn } from 'next-auth/react';
 import Image from 'next/image'
 import Link from 'next/link';
 import React, { useState } from 'react'
@@ -34,7 +35,7 @@ export default function RegisterPage() {
         <input type='password' disabled={creatingUser} placeholder='Password' value={password} onChange={env => { setPassword(env.target.value) }}></input>
         <button type='submit' disabled={creatingUser}>Register</button>
         <div className='text-center text-gray-700'>or login with provider</div>
-        <button className='flex items-center justify-center gap-4'>
+        <button onClick={() => signIn('google', { redirect: true, callbackUrl: '/' })} className='flex items-center justify-center gap-4'>
           <Image src={"/google.png"} alt={""} width={32} height={32}></Image>
           Login with google</button>
         <h1 className='text-center'>Already have an account? <Link className='underline' href={'/login'}>Login in &raquo;</Link></h1>

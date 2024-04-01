@@ -1,5 +1,6 @@
 "use client";
 import { signIn } from 'next-auth/react';
+import { redirect } from 'next/dist/server/api-utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react'
@@ -12,7 +13,7 @@ export default function LoginPage() {
     async function handleSubmit(ev: any) {
         ev.preventDefault();
         setLoginProgress(true);
-        await signIn('credentials', { email, password });
+        await signIn('credentials', { email, password, redirect: true, callbackUrl: '/' });
         setLoginProgress(false);
     }
     return (
@@ -23,10 +24,10 @@ export default function LoginPage() {
                 <input type='password' placeholder='Password' value={password} onChange={env => { setPassword(env.target.value) }}></input>
                 <button type='submit' >Login</button>
                 <div className='text-center text-gray-700'>or login with provider</div>
-                <button className='flex items-center justify-center gap-4'>
+                <button type='button' onClick={() => signIn('google', { redirect: true, callbackUrl: '/' })} className='flex items-center justify-center gap-4'>
                     <Image src={"/google.png"} alt={""} width={32} height={32}></Image>
                     Login with google</button>
-                <h1 className='text-center'>Don't have an account? <Link className='underline' href={'/register'}>Register now &raquo;</Link></h1>
+                <h1 className='text-center'>Dont have an account? <Link className='underline' href={'/register'}>Register now &raquo;</Link></h1>
             </form>
         </section>
     )

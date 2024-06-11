@@ -1,12 +1,15 @@
 'use client';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link'
-import React, { useState } from 'react'
+import ShoppingCart from "../../components/icons/ShoppingCart";
+import React, { useContext, useState } from 'react'
+import { CartContext } from '../AppContext';
 
 export default function Header() {
   const session = useSession();
   const userData = session?.data?.user;
   console.log(session);
+  const { cartProducts } = useContext(CartContext);
   const [userName, setUserName] = useState<string>()
   return (
     <>
@@ -15,9 +18,16 @@ export default function Header() {
           <Link className="text-primary font-extrabold" href={'/'}>KREAM</Link>
 
           <Link href={'/'}>Home</Link>
-          <Link href={''}>Menu</Link>
-          <Link href={''}>Abount</Link>
-          <Link href={''}>About</Link>
+          <Link href={'/menu'}>Menu</Link>
+          <Link href={'/cart'} className="relative">
+            <ShoppingCart />
+            {cartProducts?.length > 0 && (
+              <span className="absolute -top-2 -right-4 bg-primary text-white text-xs py-1 px-1 rounded-full leading-3">
+                {cartProducts.length}
+              </span>
+            )}
+          </Link>
+
 
         </nav>
         <nav className='flex gap-4 items-center  text-gray-500 font-semibold'>

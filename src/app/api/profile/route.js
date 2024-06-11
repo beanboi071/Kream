@@ -8,11 +8,16 @@ export async function PUT(req) {
   await mongoose.connect(process.env.DB_MONGO_URL);
   const sessionUser = await getServerSession(authOptions);
   const email = sessionUser.user.email;
-  console.log({ sessionUser, data });
   if ("name" in data) {
-    const result = await User.updateOne({ email }, { name: data.name });
-    console.log(result);
+    const result = await User.updateOne({ email }, data);
+
     return Response.json(true);
   }
   return null;
+}
+export async function GET() {
+  await mongoose.connect(process.env.DB_MONGO_URL);
+  const sessionUser = await getServerSession(authOptions);
+  const email = sessionUser.user.email;
+  return Response.json(await User.findOne({ email }));
 }

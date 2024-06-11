@@ -14,6 +14,10 @@ const UserSchema = new Schema(
         }
       },
     },
+    phoneNo: { type: String },
+    country: { type: String },
+    city: { type: String },
+    admin: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

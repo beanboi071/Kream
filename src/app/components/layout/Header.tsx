@@ -19,14 +19,7 @@ export default function Header() {
 
           <Link href={'/'}>Home</Link>
           <Link href={'/menu'}>Menu</Link>
-          <Link href={'/cart'} className="relative">
-            <ShoppingCart />
-            {cartProducts?.length > 0 && (
-              <span className="absolute -top-2 -right-4 bg-primary text-white text-xs py-1 px-1 rounded-full leading-3">
-                {cartProducts.length}
-              </span>
-            )}
-          </Link>
+         
 
 
         </nav>
@@ -37,10 +30,19 @@ export default function Header() {
             </> :
             <><Link href={'/login'}>Login</Link>
               <Link href={'/register'} className="bg-primary rounded-full w-36  text-white px-8 py-2">Register</Link>
+             
             </>
+            
           }
 
-
+<Link href={'/cart'} className="relative">
+            <ShoppingCart />
+            {cartProducts?.length > 0 && (
+              <span className="absolute -top-2 -right-4 bg-primary text-white text-xs py-1 px-1 rounded-full leading-3">
+                {cartProducts.length}
+              </span>
+            )}
+          </Link>
 
         </nav>
       </header>

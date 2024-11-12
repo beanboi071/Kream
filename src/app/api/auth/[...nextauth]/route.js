@@ -7,6 +7,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import clientPromise from "@/libs/mongoConnect";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
+
 export const authOptions = {
   secret: process.env.SECRET,
   adapter: MongoDBAdapter(clientPromise),
@@ -14,6 +15,11 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: 'select_account', // This forces the account selection screen to appear
+        },
+      },
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -28,7 +34,6 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         try {
-          console.log(credentials);
           const email = credentials?.email;
           const password = credentials?.password;
 
@@ -54,6 +59,7 @@ export const authOptions = {
     }),
   ],
 };
+
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

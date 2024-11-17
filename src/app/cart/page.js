@@ -1,6 +1,6 @@
 "use client";
+import KhaltiCheckout from "khalti-checkout-web";
 import { CartContext, cartProductPrice } from "../components/AppContext";
-import Trash from "../components/icons/Trash";
 import AddressInputs from "../components/layout/AddressInputs";
 import SectionHeader from "../components/layout/SectionHeader";
 import CartProduct from "../components/menu/CartProduct";
@@ -15,60 +15,62 @@ export default function CartPage() {
   const { data: profileData } = useProfile();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (window.location.href.includes("canceled=1")) {
-        toast.error("Payment failed 😔");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
     if (profileData?.city) {
       const { phone, streetAddress, city, postalCode, country } = profileData;
-      const addressFromProfile = {
-        phone,
-        streetAddress,
-        city,
-        postalCode,
-        country,
-      };
-      setAddress(addressFromProfile);
+      setAddress({ phone, streetAddress, city, postalCode, country });
     }
   }, [profileData]);
 
-  let subtotal = 0;
-  for (const p of cartProducts) {
-    subtotal += cartProductPrice(p);
-  }
+  // Calculate subtotal
+  let subtotal = cartProducts.reduce((sum, product) => sum + cartProductPrice(product), 0);
+  
   function handleAddressChange(propName, value) {
     setAddress((prevAddress) => ({ ...prevAddress, [propName]: value }));
   }
-  async function proceedToCheckout(ev) {
+
+  function proceedToCheckout(ev) {
     ev.preventDefault();
 
-    const promise = new Promise((resolve, reject) => {
-      fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address,
-          cartProducts,
-        }),
-      }).then(async (response) => {
-        if (response.ok) {
-          resolve();
-          window.location = await response.json();
-        } else {
-          reject();
-        }
-      });
-    });
+    const khaltiConfig = {
+      publicKey: process.env.NEXT_PUBLIC_KHALTI_PUBLIC_KEY,
+      productIdentity: "1234567890",
+      productName: "Cart Total",
+      productUrl: "http://localhost:3000/",
+      eventHandler: {
+        onSuccess(payload) {
+          const totalAmount = (subtotal + 40) * 100; // Total amount with delivery
+          // Send request to verify payment
+          fetch("/api/verify-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token: payload.token, amount: totalAmount }),
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                toast.success("Payment successful!");
+              } else {
+                toast.error("Payment verification failed!");
+              }
+            })
+            .catch(() => toast.error("Server error during verification"));
+        },
+        onError(error) {
+          toast.error("Payment failed!");
+        },
+        onClose() {
+          console.log("Payment widget is closed");
+        },
+      },
+      paymentPreference: ["KHALTI"],
+    };
 
-    await toast.promise(promise, {
-      loading: "Preparing your order...",
-      success: "Redirecting to payment...",
-      error: "Something went wrong... Please try again later",
-    });
+    // Initialize Khalti Checkout
+    const khaltiCheckout = new KhaltiCheckout(khaltiConfig);
+    const totalAmount = (subtotal + 40) * 100; // Total amount with delivery
+    khaltiCheckout.show({ amount: totalAmount });
   }
 
   if (cartProducts?.length === 0) {
@@ -87,32 +89,21 @@ export default function CartPage() {
       </div>
       <div className="mt-8 grid gap-8 grid-cols-2">
         <div>
-          {cartProducts?.length === 0 && (
-            <div>No products in your shopping cart</div>
-          )}
-          {cartProducts?.length > 0 &&
-            cartProducts.map((product, index) => (
-              <CartProduct
-                key={index}
-                index={index}
-                product={product}
-                onRemove={removeCartProduct}
-              />
-            ))}
+          {cartProducts.map((product, index) => (
+            <CartProduct
+              key={index}
+              index={index}
+              product={product}
+              onRemove={removeCartProduct}
+            />
+          ))}
           <div className="py-2 pr-16 flex justify-end items-center">
             <div className="text-gray-500">
-              Subtotal:
+              Subtotal: Rs {subtotal}
               <br />
-              Delivery:
+              Delivery: Rs 40
               <br />
-              Total:
-            </div>
-            <div className="font-semibold pl-2 text-right">
-              Rs{subtotal}
-              <br />
-              Rs 40
-              <br />
-              Rs{subtotal + 40}
+              Total: Rs {subtotal + 40}
             </div>
           </div>
         </div>
